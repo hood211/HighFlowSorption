@@ -10,6 +10,8 @@ library(discharge)
 library(MuMIn)
 library(GGally)
 library(ggpubr)
+library(egg)
+library(grid)
 #load functions
 source("02b_SorptionScaling/zz_TravelTimeEstFuns.R")
 
@@ -31,6 +33,11 @@ wqMaum <- read.csv("01_RawData/00wq_maumeedata.csv")[,1:15] %>%
 wqMaum[wqMaum$dateTime == as.POSIXct("0016-06-27 10:10:00", format= "%Y-%m-%d %H:%M:%S"),]$dateTime = as.POSIXct("2016-06-27 10:10:00", format= "%Y-%m-%d %H:%M:%S")
 
 # just take a look
+library(ggthemes)
+ggplot(wqMaum, aes(y = TP_mgL, x = dateTime)) +geom_point() +
+  theme_few() +
+  ylab("Total phosphorus (mg P/L") +
+  xlab("Time")
 ggplot(wqMaum, aes(y = QCFS, x = dateTime)) +geom_line()
 
 # cummulative sum
@@ -193,7 +200,7 @@ hist(gPsrbGdmData$gPsorb_gSS)
     summarize_at(vars(gPsorbedgDM:gDRPwindowWOsorp), list("s" = sum), na.rm = TRUE) %>% 
     group_by(Y, bootN) %>% 
     summarize_at(vars(gPsorbedgDM_s:gDRPwindowWOsorp_s), list("s" = sum), na.rm = TRUE) %>% 
-    rename(gPsorbedgDM = gPsorbedgDM_s_s, 
+    rename(gPsorbedgDM = gPsorbedgDM_s_s, # THIS NEEDS TO BE DELETED - DOESN'T MAKE SENSE TO SUM
            Qm3marJun = Qm3window_s_s, gDRPmarJun= gDRPwindow_s_s, gSSmarJun = gSSwindow_s_s,
            gTPmarJun = gTPwindow_s_s,
            gPsorbMarJun = gPsorbWindow_s_s, 
@@ -225,8 +232,8 @@ hist(gPsrbGdmData$gPsorb_gSS)
     select(Yn, mtDRPmarJun_50per:cyanoIndexWoS) %>% 
     pivot_longer(cols = c(mtDRPmarJun_50per:cyanoIndexWoS), names_to = "var", values_to = "values") 
   
-  write.csv(wqMaum2, "04_generatedData/06d_Scale2WVall.csv")
-  write.csv(wqMaum03, "04_generatedData/06d_Scale2WVhabs.csv")
+  # write.csv(wqMaum2, "04_generatedData/06d_Scale2WVall.csv")
+  # write.csv(wqMaum03, "04_generatedData/06d_Scale2WVhabs.csv")
   
   
   ################  
@@ -248,33 +255,148 @@ hist(gPsrbGdmData$gPsorb_gSS)
          aes(y = Qm3s, x = DOY)) +
     geom_line() +
     facet_wrap(vars(Y))
-  
-  MaumLoadsAn <- MaumLoads %>% 
-    mutate(TargetFlow = ifelse(Qm3s > MaumTargetFlow, "G75th", "L75th")) %>% 
+
+ 
+  MaumLoadsAn0 <- MaumLoads %>% 
+    mutate(TargetFlow = as.factor(ifelse(Qm3s > MaumTargetFlow, "G75th", "L75th"))) %>% 
+    filter(!is.na(TargetFlow)) %>% 
     mutate(Y = as.character(strftime(dateTime, format = "%Y")),
            M = as.factor(as.character(strftime(dateTime, format = "%m"))),
-           TargetMonths = ifelse(M %in% c("03", "04", "05", "06"), "M_J","else")) %>% 
+           TargetMonths = as.factor(ifelse(M %in% c("03", "04", "05", "06"), "MarJun",
+                                           ifelse(M == "07", "Jul","AugFeb")))) %>% 
     # remove 1978, 79, 80,81; could leave 78 for spring stuff
     filter(Y != 1978 & Y != 1979 & Y != 1980 & Y != 1981) %>% 
-    select(-c(SS_mgL:Qm3window), -c(gSSwindow:gDRPwindowWOsorp), -SmpTimeWindowDay) %>% 
+    select(dateTime, SmpTimeWindowDay, gDRPwindow, gSSwindow, TargetFlow,Y, M, TargetMonths) %>% 
+    # select(-c(SS_mgL:Qm3window), -c(gSSwindow:gDRPwindowWOsorp), -SmpTimeWindowDay) %>% 
     group_by(Y, TargetMonths, TargetFlow) %>% 
-    summarise(gDRPwindow= sum(gDRPwindow, na.rm = TRUE)) %>% 
-    pivot_wider(id_cols = Y, names_from = c(TargetFlow, TargetMonths), values_from = gDRPwindow) %>% 
-    mutate(gDRPannual = G75th_else + L75th_else + G75th_M_J + L75th_M_J,
-           G75thMJ_totMJ = G75th_M_J/(G75th_M_J + L75th_M_J),
-           G75anual_totAnnual = (G75th_M_J + G75th_else)/gDRPannual)
+    summarise(gDRPwindow= sum(gDRPwindow, na.rm = TRUE),
+              gSSwindow = sum(gSSwindow, na.rm = TRUE))  
   
-  ggplot(MaumLoadsAn, aes(y = G75thMJ_totMJ, x = as.numeric(Y))) +
-    geom_point()
+  MaumLoadsAn0b <- MaumLoadsAn0 %>% 
+    mutate(key = as.factor(paste0(TargetMonths,"_",TargetFlow))) %>% 
+    mutate(key2 = fct_rev(fct_relevel(key, c("AugFeb_L75th","MarJun_L75th","Jul_L75th","AugFeb_G75th", "MarJun_G75th", "Jul_G75th"))))
   
-  ggplot(MaumLoadsAn, aes(y = G75anual_totAnnual, x = as.numeric(Y))) +
-    geom_point()
+FigS1a <-   ggplot(MaumLoadsAn0b, 
+         aes(y = gDRPwindow/1e6, x = as.numeric(Y), fill = key2)) +
+    geom_bar(stat = "identity")+
+    scale_fill_manual(values = c("pink", "firebrick1", "firebrick4","lightblue", "steelblue3", "steelblue4"), name = "Loading window",
+                      labels = c(">75% flow: Jul",
+                                 ">75% flow: Mar-Jun",
+                                 ">75% flow: Aug-Feb",
+                                 "<75% flow: Jul",
+                                 "<75% flow: Mar-Jun",
+                                 "<75% flow: Aug-Feb"))+
+    theme_bw() +
+    ylab("DRP load (ton P)") +
+    xlab("Year") +
+    theme(legend.position = c(0.12,0.79),
+          legend.text = element_text(size = 9),
+          legend.title = element_text(size = 12, face = "bold"),
+          legend.key.height = unit(0.45,"cm"),
+          legend.spacing.y = unit(0.05,"cm"),
+          legend.margin = margin(0.1,0,0,0, unit="cm"),
+          legend.background = element_rect(fill = "transparent"),
+          axis.title = element_text(size = 18),
+          axis.text = element_text(size = 12),
+          panel.background = element_rect(fill = "transparent"),
+          panel.grid.minor = element_blank()) 
+  
+
+  
+FigS1b <-   ggplot(MaumLoadsAn0b, 
+         aes(y = gSSwindow/1e12, x = as.numeric(Y), fill = key2)) +
+    geom_bar(stat = "identity")+
+    scale_fill_manual(values = c("pink", "firebrick1", "firebrick4","lightblue", "steelblue3", "steelblue4"), name = "Loading window",
+                      labels = c(">75% flow: Jul",
+                                 ">75% flow: Mar-Jun",
+                                 ">75% flow: Aug-Feb",
+                                 "<75% flow: Jul",
+                                 "<75% flow: Mar-Jun",
+                                 "<75% flow: Aug-Feb"))+
+    theme_bw() +
+    ylab(expression(paste("SS load (ton dry mass x ",10^-6,")"))) +
+    xlab("Year") +
+    theme(legend.position = "none",
+          legend.text = element_text(size = 10),
+          legend.title = element_text(size = 12, face = "bold"),
+          legend.key.height = unit(0.5,"cm"),
+          legend.spacing.y = unit(0.05,"cm"),
+          legend.margin = margin(0.1,0,0,0, unit="cm"),
+          legend.background = element_rect(fill = "transparent"),
+          axis.title = element_text(size = 18),
+          axis.text = element_text(size = 12),
+          panel.background = element_rect(fill = "transparent"),
+          panel.grid.minor = element_blank()) 
+  
+FigS1a.g <- ggplotGrob(FigS1a)
+FigS1b.g <- ggplotGrob(FigS1b)
+
+FigS1a.gtf <- gtable_frame(FigS1a.g, width = unit(1, "null"), height = unit(0.75, "null"))
+FigS1b.gtf <- gtable_frame(FigS1b.g, width = unit(1, "null"), height = unit(0.75, "null"))
+FigS1.gtf <- gtable_frame(gtable_rbind(FigS1a.gtf, FigS1b.gtf),
+                          width = unit(1, "null"), height = unit(1.5, "null"))
+
+png("05_Figures/06aFigS1.png", units="in", width=8, height=8, res=300)
+grid.newpage()
+grid.draw(FigS1.gtf)
+grid.text("a", x = unit(0.02,"npc"), y = unit(0.98,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+grid.text("b", x = unit(0.02,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+dev.off()
+
+
+
+
+
+
+# Calc percent loads during different windows  
+  MaumLoadsAn_DRP <- MaumLoadsAn0 %>% 
+      pivot_wider(id_cols = Y, names_from = c(TargetFlow, TargetMonths), values_from = gDRPwindow) %>% 
+    mutate(G75th_Jul = ifelse(is.na(G75th_Jul), 0, G75th_Jul)) %>% 
+    mutate(gDRPannual = G75th_AugFeb + L75th_AugFeb + G75th_MarJun + L75th_MarJun + G75th_Jul + L75th_Jul,
+           gDRP_MarJuly = G75th_MarJun + L75th_MarJun + G75th_Jul + L75th_Jul,
+           gDRP_MarJulyG75th = G75th_MarJun + G75th_Jul,
+           perMarJulyG75th_gDRP_MarJuly = gDRP_MarJulyG75th/gDRP_MarJuly,
+           perG75thJul_MarJulyG75th = G75th_Jul/gDRP_MarJulyG75th)
+
+  MaumLoadsAn_DRP %>% 
+    ungroup() %>% 
+    summarise(mean = mean(perG75thJul_MarJulyG75th, na.rm = T)*100,
+              sd = sd(perG75thJul_MarJulyG75th, na.rm = T)*100)
+  
+  MaumLoadsAn_DRP %>% 
+    ungroup() %>% 
+    summarise(mean = mean(perMarJulyG75th_gDRP_MarJuly, na.rm = T)*100,
+              sd = sd(perMarJulyG75th_gDRP_MarJuly, na.rm = T)*100)
+    
+  MaumLoadsAn_SS <- MaumLoadsAn0 %>% 
+    pivot_wider(id_cols = Y, names_from = c(TargetFlow, TargetMonths), values_from = gSSwindow) %>% 
+    mutate(G75th_Jul = ifelse(is.na(G75th_Jul), 0, G75th_Jul)) %>% 
+    mutate(gDRPannual = G75th_AugFeb + L75th_AugFeb + G75th_MarJun + L75th_MarJun + G75th_Jul + L75th_Jul,
+           gDRP_MarJuly = G75th_MarJun + L75th_MarJun + G75th_Jul + L75th_Jul,
+           gDRP_MarJulyG75th = G75th_MarJun + G75th_Jul,
+           perMarJulyG75th_gDRP_MarJuly = gDRP_MarJulyG75th/gDRP_MarJuly,
+           perG75thJul_MarJulyG75th = G75th_Jul/gDRP_MarJulyG75th)
+  
+  MaumLoadsAn_SS %>% 
+    ungroup() %>% 
+    summarise(mean = mean(perG75thJul_MarJulyG75th, na.rm = T)*100,
+              sd = sd(perG75thJul_MarJulyG75th, na.rm = T)*100)
+  
+  MaumLoadsAn_SS %>% 
+    ungroup() %>% 
+    summarise(mean = mean(perMarJulyG75th_gDRP_MarJuly, na.rm = T)*100,
+              sd = sd(perMarJulyG75th_gDRP_MarJuly, na.rm = T)*100)
+
   
   
-  hist(MaumLoadsAn$G75thMJ_totMJ)
+    
+
+  
+
+  
   
   ################  
   # save.image("03_Rdata/06a_ScaleAtWaterville_Rdat")
-  # load("03_Rdata/06a_ScaleAtWaterville_Rdat")
+  load("03_Rdata/06a_ScaleAtWaterville_Rdat")
   ################
   
