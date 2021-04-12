@@ -271,7 +271,10 @@ grid.text("b", x = unit(0.41,"npc"), y = unit(0.97,"npc"), gp=gpar(fontsize = 25
 grid.text("c", x = unit(0.02,"npc"), y = unit(0.39,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
 dev.off()
 
-
+png("05_Figures/07p_Fig3_take3.png", units="in", width=8, height=6, res=300)
+grid.newpage()
+grid.draw(gtable_frame(Fig3b.g, width = unit(0.8, "null"), height = unit(1, "null")))
+dev.off()
 
 #####################
 # SAVE/LOAD
@@ -281,6 +284,85 @@ save.image("03_Rdata/07_TribFigs_rdat")
 load("03_Rdata/07_TribFigs_rdat")
 
 
+# for nature submission
+Fig3bNat <-  ggplot() +
+  geom_line(data = TribSorbS2, aes(y = s50per/1000, x = DRPloadUS.gPwin.hf_50per_s/1000), color = "grey", linetype = "dashed")+
+  geom_line(data = TribSorbS2, aes(y = s25per/1000, x = DRPloadUS.gPwin.hf_50per_s/1000), color = "grey", linetype = "dashed")+
+  geom_line(data = TribSorbS2, aes(y = s10per/1000, x = DRPloadUS.gPwin.hf_50per_s/1000), color = "grey", linetype = "dashed")+
+  geom_point(data = TribSorbS2, aes(y = Svol_gPwindow.hf_50per_s/1000, x = DRPloadUS.gPwin.hf_50per_s/1000, fill = stream, size = Qm3m_50per_m),
+             shape = 21, alpha = 0.5)+
+  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.1,1, 10,100), limits = c(0.0005, 250),
+                labels = function(x) sprintf("%g", x)) + #
+  scale_y_log10(breaks = c(0.0001, 0.001, 0.01, 0.1,1, 10,100), limits = c(0.0001, 250),
+                labels = function(x) sprintf("%g", x)) +
+  annotate("text", x = 0.0008, y = 0.002*0.6, label = "50%", color = "grey40", size = 5) +
+  annotate("text", x = 0.0008, y = 0.002*0.25, label = "25%", color = "grey40", size = 5) +
+  annotate("text", x = 0.0008, y = 0.002*0.1, label = "10%", color = "grey40", size = 5) +
+  scale_fill_manual(values = c("STF"="light salmon",
+                               "UTLC"="medium sea green",
+                               "WC" = "plum2"), name = "Stream") +
+  scale_color_manual(values = c("STF"="light salmon",
+                                "UTLC"="medium sea green",
+                                "WC" = "plum2"), guide = FALSE) +
+  scale_size(name = expression(paste("Discharge (", m^3," ", min^-1,")")))+
+  xlab(expression(paste("DRP load (kg ",day^-1,")"))) +
+  ylab(expression(paste("P sorption (kg ",day^-1,")"))) +
+  theme_bw() +
+  theme(legend.position = c(0.17,0.8),
+        legend.text = element_text(size = 8),
+        legend.title = element_text(size = 12),
+        legend.key.height = unit(0.5,"cm"),
+        legend.spacing.y = unit(0.05,"cm"),
+        legend.margin = margin(0.1,0,0,0, unit="cm"),
+        legend.background = element_rect(fill = "transparent"),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 12),
+        panel.background = element_rect(fill = "transparent"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank()) +
+  guides(fill = guide_legend(override.aes = list(size=5))) +
+  stat_smooth(data = TribSorbS2, aes(y = Svol_gPwindow.hf_50per_s/1000, x = DRPloadUS.gPwin.hf_50per_s/1000, color = stream), method = "lm")
 
 
+Fig3aNat <-  ggplot(TribSorbSsw)  +
+  geom_density(aes(x = DRPsorbed.hf, fill = stream))+
+  geom_rug(aes(x = DRPsorbed.hf, y = 0, color = stream), position = position_jitter(height = 0)) +
+  xlab("% DRP sorbed") + #
+  ylab("Density") +
+  scale_fill_manual(values = c("STF"="light salmon",
+                               "UTLC"="medium sea green",
+                               "WC" = "plum2"))+
+  scale_color_manual(values = c("STF"="light salmon",
+                                "UTLC"="medium sea green",
+                                "WC" = "plum2"))+
+  xlim(30,50) +
+  theme_bw() +
+  theme(legend.position = "none",#c(0.9,0.9)
+        legend.background = element_rect(fill = "transparent"),
+        axis.title = element_text(size = 18),
+        axis.text = element_text(size = 12),
+        plot.background = element_rect(fill = "transparent"),
+        panel.background = element_rect(fill = "transparent"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.border = element_blank(),
+        axis.line.x = element_line(size = 1, color = "black"),
+        axis.line.y = element_line(size = 1, color = "black")) 
+
+
+png("05_Figures/07p_Fig3_take3.png", units="in", width=7, height=6, res=300)
+grid.newpage()
+grid.draw(gtable_frame(ggplotGrob(Fig3bNat), width = unit(0.8, "null"), height = unit(1, "null")))
+dev.off()
+
+png("05_Figures/07p_Fig3_take3inset.png", units="in", width=2.5, height=5, res=300, bg = "transparent")
+grid.newpage()
+grid.draw(gtable_frame(ggplotGrob(Fig3aNat), width = unit(1, "null"), height = unit(1, "null")))
+dev.off()
+
+
+png("05_Figures/07p_FigS6.png", units="in", width=8, height=3, res=300, bg = "transparent")
+grid.newpage()
+grid.draw(gtable_frame(Fig3c.g, width = unit(2, "null"), height = unit(0.3, "null")))
+dev.off()
 

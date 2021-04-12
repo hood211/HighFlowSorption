@@ -280,12 +280,12 @@ FigS1a <-   ggplot(MaumLoadsAn0b,
          aes(y = gDRPwindow/1e6, x = as.numeric(Y), fill = key2)) +
     geom_bar(stat = "identity")+
     scale_fill_manual(values = c("pink", "firebrick1", "firebrick4","lightblue", "steelblue3", "steelblue4"), name = "Loading window",
-                      labels = c(">75% flow: Jul",
-                                 ">75% flow: Mar-Jun",
-                                 ">75% flow: Aug-Feb",
-                                 "<75% flow: Jul",
-                                 "<75% flow: Mar-Jun",
-                                 "<75% flow: Aug-Feb"))+
+                      labels = c("<25% flow ex.: Jul",
+                                 "<25% flow ex.: Mar-Jun",
+                                 "<25% flow ex.: Aug-Feb",
+                                 ">25% flow ex.: Jul",
+                                 ">25% flow ex.: Mar-Jun",
+                                 ">25% flow ex.: Aug-Feb"))+
     theme_bw() +
     ylab("DRP load (ton P)") +
     xlab("Year") +
@@ -307,12 +307,12 @@ FigS1b <-   ggplot(MaumLoadsAn0b,
          aes(y = gSSwindow/1e12, x = as.numeric(Y), fill = key2)) +
     geom_bar(stat = "identity")+
     scale_fill_manual(values = c("pink", "firebrick1", "firebrick4","lightblue", "steelblue3", "steelblue4"), name = "Loading window",
-                      labels = c(">75% flow: Jul",
-                                 ">75% flow: Mar-Jun",
-                                 ">75% flow: Aug-Feb",
-                                 "<75% flow: Jul",
-                                 "<75% flow: Mar-Jun",
-                                 "<75% flow: Aug-Feb"))+
+                      labels = c("<25% flow ex.: Jul",
+                                 "<25% flow ex.: Mar-Jun",
+                                 "<25% flow ex.: Aug-Feb",
+                                 ">25% flow ex.: Jul",
+                                 ">25% flow ex.: Mar-Jun",
+                                 ">25% flow ex.: Aug-Feb"))+
     theme_bw() +
     ylab(expression(paste("SS load (ton dry mass x ",10^-6,")"))) +
     xlab("Year") +
@@ -397,6 +397,6 @@ dev.off()
   
   ################  
   # save.image("03_Rdata/06a_ScaleAtWaterville_Rdat")
-  load("03_Rdata/06a_ScaleAtWaterville_Rdat")
+  # load("03_Rdata/06a_ScaleAtWaterville_Rdat")
   ################
   
