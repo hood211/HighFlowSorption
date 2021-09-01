@@ -461,22 +461,23 @@ dev.off()
   
 # PLOT
  Fig4D <-  ggplot()+
-    geom_segment(data = Mall_G03, aes(y = mtDRPmarJun_50per, 
+   geom_line(data = Mall_G03, aes(y = mtDRPmarJun_predict, x = Qm3e6_marJun_50per), color = "firebrick", size = 1.3) +
+   geom_line(data = Mall_G03, aes(y = mtDRPmarJun_predict_w75SSa, x = Qm3e6_marJun_50per), color = "salmon", size = 1.3)+
+   geom_line(data = Mall_L03, aes(y = mtDRPmarJun_predict, x = Qm3e6_marJun_50per), color = "dodgerblue", size = 1.3) +
+       geom_segment(data = Mall_G03, aes(y = mtDRPmarJun_50per, 
                                       yend = mtDRPmarJun_50per - mtPsorbMarJunP_75_Ydiff,
                                       x= Qm3e6_marJun_50per, xend = Qm3e6_marJun_50per),
                  arrow = arrow(length = unit(0.1, "inches")), color = "grey30", size = 0.75, alpha = 0.75) +
+
     # geom_text(data = Mall_G03, aes(y = mtDRPmarJun_50per, x = Qm3e6_marJun_50per, label = Yn2), color = "firebrick", fontface = "bold") +
-    geom_point(data = Mall_G03, aes(y = mtDRPmarJun_50per, x = Qm3e6_marJun_50per), color = "firebrick", fontface = "bold", size = 4) +
+   geom_point(data = Mall_L03, aes(y = mtDRPmarJun_50per, x = Qm3e6_marJun_50per), 
+              fill = "dodgerblue", shape = 21, size = 4) +
+    geom_point(data = Mall_G03, aes(y = mtDRPmarJun_50per, x = Qm3e6_marJun_50per), color = "firebrick", size = 4) +
     geom_point(data = Mall_G03, aes(y = mtDRPmarJun_50per - mtPsorbMarJunP_75_Ydiff, x = Qm3e6_marJun_50per), 
                fill = "salmon", shape = 21, size = 4) +
-    geom_point(data = Mall_L03, aes(y = mtDRPmarJun_50per, x = Qm3e6_marJun_50per), 
-               fill = "dodgerblue", shape = 21, size = 4) +
-    geom_line(data = Mall_G03, aes(y = mtDRPmarJun_predict, x = Qm3e6_marJun_50per), color = "firebrick", size = 1.3) +
-    geom_line(data = Mall_G03, aes(y = mtDRPmarJun_predict_w75SSa, x = Qm3e6_marJun_50per), color = "salmon", size = 1.3)+
-    geom_line(data = Mall_L03, aes(y = mtDRPmarJun_predict, x = Qm3e6_marJun_50per), color = "dodgerblue", size = 1.3) +
-    scale_y_continuous("DRP load (tons P)",
-                       sec.axis = sec_axis(~ 0.48 * 10^(. * 0.00387), #conver to kT DM then metric ton P
-                                           "Max cyanobacteria index", breaks = c(1, 2.5, 5, 10, 20, 30))) +
+    scale_y_continuous("DRP load (tons P)") +
+    #                    sec.axis = sec_axis(~ 0.48 * 10^(. * 0.00387), #conver to kT DM then metric ton P
+    #                                        "Max cyanobacteria index", breaks = c(1, 2.5, 5, 10, 20, 30))) +
     xlab(expression(paste("Discharge (",m^3, "x ", 10^6,")"))) +
     theme(panel.grid.minor = element_blank(),
           panel.grid.major = element_line(color = "grey90"),
@@ -608,50 +609,58 @@ summary(lm(log10(Qm3marJun_50per) ~ Yn, Mall2 %>%
 
 
 ################
-# Assemble PLOT
+# Assemble PLOTS
 ################
 
+################
+# Fig. 5 (wrong fig 4 above because of changes b/w submissions)
+# updated 1 Sept.
+################
 
-
-Fig4A.g <- ggplotGrob(Fig4A)
-Fig4B.g <- ggplotGrob(Fig4B)
-Fig4C.g <- ggplotGrob(Fig4C)
-Fig4D.g <- ggplotGrob(Fig4D)
-
-
-Fig4A.gtf <- gtable_frame(Fig4A.g,  width = unit(1.8, "null"), height = unit(0.9, "null"))
-Fig4B.gtf <- gtable_frame(Fig4B.g,  width = unit(0.8, "null"), height = unit(0.9, "null"))
-Fig4C.gtf <- gtable_frame(Fig4C.g,  width = unit(0.4, "null"), height = unit(0.9, "null"))
-Fig4D.gtf <- gtable_frame(Fig4D.g,  width = unit(0.8, "null"), height = unit(0.9, "null"))
-
-# Fig4ABC.gtf <- gtable_frame(gtable_cbind(Fig4AB.gtf, Fig4C.gtf),  width = unit(0.9, "null"), height = unit(0.9, "null"))
-# Fig4AB.gtf <- gtable_frame(gtable_cbind(Fig4A.gtf, Fig4B.gtf),  width = unit(0.9, "null"), height = unit(0.9, "null"))
-Fig4BC.gtf <- gtable_frame(gtable_cbind(Fig4B.gtf, Fig4C.gtf, Fig4D.gtf),  width = unit(1.8, "null"), height = unit(0.9, "null"))
-
-Fig4.gtf <- gtable_rbind(Fig4A.gtf, Fig4BC.gtf)
+Fig5A.g <- ggplotGrob(Fig4A)
+Fig5B.g <- ggplotGrob(Fig4B)
+Fig5C.g <- ggplotGrob(Fig4C)
 
 
 
+Fig5A.gtf <- gtable_frame(Fig5A.g,  width = unit(1.8, "null"), height = unit(0.9, "null"))
+Fig5B.gtf <- gtable_frame(Fig5B.g,  width = unit(0.8, "null"), height = unit(0.9, "null"))
+Fig5C.gtf <- gtable_frame(Fig5C.g,  width = unit(0.8, "null"), height = unit(0.9, "null"))
 
-png("05_Figures/08_Fig4_2.png", units = "in", height = 12, width = 16, res = 300)
+Fig5BC.gtf <- gtable_frame(gtable_cbind(Fig5B.gtf, Fig5C.gtf),  width = unit(1.8, "null"), height = unit(0.9, "null"))
+
+Fig5.gtf <- gtable_rbind(Fig5A.gtf, Fig5BC.gtf)
+
+
+
+
+png("05_Figures/08_Fig5_20210901.png", units = "in", height = 12, width = 14, res = 300)
 grid.newpage()
-grid.draw(Fig4.gtf)
+grid.draw(Fig5.gtf)
 grid.text("a", x = unit(0.01,"npc"), y = unit(0.98,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
-grid.text("b", x = unit(0.01,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
-grid.text("c", x = unit(0.385,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
-grid.text("d", x = unit(0.615,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+grid.text("b", x = unit(0.01,"npc"), y = unit(0.52,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+grid.text("c", x = unit(0.51,"npc"), y = unit(0.52,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+# grid.text("d", x = unit(0.615,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+dev.off()
+
+
+################
+# FIGURE 7 FOR GCB
+################
+
+Fig7.g <- ggplotGrob(Fig4D)
+Fig7.gtf <- gtable_frame(Fig7.g,  width = unit(0.8, "null"), height = unit(0.9, "null"))
+
+png("05_Figures/08_Fig7_20210901.png", units = "in", height = 7, width = 6, res = 300)
+grid.newpage()
+grid.draw(Fig7.gtf)
 dev.off()
 
 
 #####################
-# SAVE/LOAD
-#####################
-#didn't get through everything before saving
-save.image("03_Rdata/08_MaumeeFigs3_rdat")
-# load("03_Rdata/08_MaumeeFigs3_rdat")
-
-
 # Figure for directors talk 8 June 2021
+#####################
+
 FigDirA <- ggplot() +
   geom_ribbon(data = Mall, aes(ymin = gDRPmarJun_50per/1e6, ymax = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6, x = Y),
               fill = "firebrick", alpha = 70/100) +
@@ -702,4 +711,45 @@ FigDirB <- ggplot() +
 
 png("05_Figures/SorpVtimeDirectorsNOSorb_20210608.png", units = "in", height = 7, width = 16, res = 300)
 FigDirB
+dev.off()
+
+
+#####################
+# SAVE/LOAD
+#####################
+# save.image("03_Rdata/08_MaumeeFigs3_rdat")
+load("03_Rdata/08_MaumeeFigs3_rdat")
+
+
+
+#####################
+# This was the PNAS version - backed up 1 Sept.
+#####################
+Fig4A.g <- ggplotGrob(Fig4A)
+Fig4B.g <- ggplotGrob(Fig4B)
+Fig4C.g <- ggplotGrob(Fig4C)
+Fig4D.g <- ggplotGrob(Fig4D)
+
+
+Fig4A.gtf <- gtable_frame(Fig4A.g,  width = unit(1.8, "null"), height = unit(0.9, "null"))
+Fig4B.gtf <- gtable_frame(Fig4B.g,  width = unit(0.8, "null"), height = unit(0.9, "null"))
+Fig4C.gtf <- gtable_frame(Fig4C.g,  width = unit(0.4, "null"), height = unit(0.9, "null"))
+Fig4D.gtf <- gtable_frame(Fig4D.g,  width = unit(0.8, "null"), height = unit(0.9, "null"))
+
+# Fig4ABC.gtf <- gtable_frame(gtable_cbind(Fig4AB.gtf, Fig4C.gtf),  width = unit(0.9, "null"), height = unit(0.9, "null"))
+# Fig4AB.gtf <- gtable_frame(gtable_cbind(Fig4A.gtf, Fig4B.gtf),  width = unit(0.9, "null"), height = unit(0.9, "null"))
+Fig4BC.gtf <- gtable_frame(gtable_cbind(Fig4B.gtf, Fig4C.gtf, Fig4D.gtf),  width = unit(1.8, "null"), height = unit(0.9, "null"))
+
+Fig4.gtf <- gtable_rbind(Fig4A.gtf, Fig4BC.gtf)
+
+
+
+
+png("05_Figures/08_Fig4_2.png", units = "in", height = 12, width = 16, res = 300)
+grid.newpage()
+grid.draw(Fig4.gtf)
+grid.text("a", x = unit(0.01,"npc"), y = unit(0.98,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+grid.text("b", x = unit(0.01,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+grid.text("c", x = unit(0.385,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+grid.text("d", x = unit(0.615,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
 dev.off()
