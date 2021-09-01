@@ -1,3 +1,7 @@
+#################     
+# Libraries
+#################
+
 library(tidyverse)
 library(MuMIn)
 library(ggpubr)
@@ -7,7 +11,10 @@ library(grid)
 library(egg)
 library(png)
 
+#################
 # Import data -----------
+#################
+
 # subset of data for HABS stuff 2003 to 2019
 Mhab <- read.csv("04_generatedData/06d_Scale2WVhabs.csv", row.names = 1) %>% 
   mutate(var = as.factor(var))
@@ -19,12 +26,16 @@ Mall <- read.csv("04_generatedData/06d_Scale2WVall.csv", row.names = 1) %>%
   select(-c(gPsorbedgDM_2.5per, gPsorbedgDM_50per, gPsorbedgDM_97.5per)) %>% 
   mutate(gPsorbedgDM = gPsorbMarJunP_50per/gSSmarJun_50per)
 
-
+#################
 # How much P was sorbed? -------------
+#################
+
 summary(Mall$gPsorbMarJunP_50per)/1e6 #tons
 
-
+#################
 # time series of DRP exports w and w/p sorption -----
+#################
+
 # - Fig 4a 
 
 Fig4A <- ggplot() +
@@ -48,9 +59,9 @@ Fig4A <- ggplot() +
   geom_point(aes(y =585, x = 1975), color = "black", size = 5) +
   annotate("text", label = "Observed", y = 585, x = 1976, size = 8, hjust = 0) 
 
-  
+################# 
 # Cyano Fig - 4c -----
-
+#################
 
 Fig4C <- ggplot(Mhab %>% 
                   filter(var == "cyanoIndex" | var == "cyanoIndexWoS") %>% 
@@ -131,8 +142,10 @@ QvY1985.l <- lm(L10.Qm3e6_marJun_50per ~ Y, Mall2 %>%
               filter(Yn >= 1985)); 
 summary(QvY1985.l) # year is now significant
 
-
+#################
 # SUSPENDED SEDIMENTS v Q --------
+#################
+
 
 # Decline in SS loads over time
 ggplot(Mall2, aes(y = mtSSmarJun_50per, x = Yn)) +
@@ -185,7 +198,12 @@ ggplot(Mall2, aes(y = SS_Qres, x = Yn, label= Yn)) +
   geom_text() +
   stat_smooth(method = "lm")
 
+
+#################
 # DRP v Q -------
+#################
+
+
 DRPvQintYn.l1 <- lm(L10.mtDRPmarJun_50per ~ L10.Qm3e6_marJun_50per * Yn, Mall2)
 DRPvQintYn.l2 <- lm(L10.mtDRPmarJun_50per ~ L10.Qm3e6_marJun_50per + Yn, Mall2)
 DRPvQintYn.l3 <- lm(L10.mtDRPmarJun_50per ~ L10.Qm3e6_marJun_50per, Mall2)
@@ -200,7 +218,9 @@ summary(DRPvQintYn.l2) # effect of year is marginally significant
 # best SS model DRP ~ Q + SSres
 summary(DRPvQintYn.l5) # effect of SS is marginally significant
 
+#################
 # SOME SUPPLEMENTAL PLOTS FIG S5 -------
+#################
 Qvtime <- ggplot() +
   geom_line(data = Mall2, aes(y = Qm3e6_marJun_50per, x = Y),  color = "black", size = 0.5, linetype = "dashed") +
   geom_point(data = Mall2, aes(y = Qm3e6_marJun_50per, x = Y), shape = 21, fill = "grey80", size = 4) +
@@ -311,41 +331,42 @@ grid.text("c", x = unit(0.03,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25,
 grid.text("d", x = unit(0.53,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
 dev.off()
 
-
+#################
 # HOW MUCH DID DECLINES IN SS AND P SORB CONTRIBUTE TO CHANGES IN DRP
+#################
 
   # make new dataframe
   Mall3 <- Mall2
   Mall3$Yn1975 <-  1975
   
-  # # SS PREDICTIONS
-  # # SS predictions from model above
-  # Mall3$mtSSmarJun_pred = 10^predict(SSvQpYn.l, Mall3)
-  # 
-  # # SS for each yearly Q with 1975 concentrations (accounts for Q)
-  # Mall3$mtSSmarJun_w75seds = 10^predict(SSvQpYn.l, data.frame(L10.Qm3e6_marJun_50per = Mall3$L10.Qm3e6_marJun_50per, 
-  #                                                             Yn = rep(1975, length = 42)))
-  # 
-  # # SS for each yearly Q with 2019 concentrations (accounts for Q)
-  # Mall3$mtSSmarJun_w2019seds = 10^predict(SSvQpYn.l, data.frame(L10.Qm3e6_marJun_50per = Mall3$L10.Qm3e6_marJun_50per, 
-  #                                                               Yn = rep(2019, length = 42)))
-  # 
-  # # P SORPTION PREDICTIONS
-  # # P sorbed with predicted seds, using median from median values from monte carlo
-  # Mall3$mtPsorbMarJunP_wPredSeds = Mall3$mtSSmarJun_pred* quantile(Mall2$gPsorbedgDM, probs = 0.5)
-  # 
-  # # P sorbed with 75 seds
-  # Mall3$mtPsorbMarJunP_w75seds = Mall3$mtSSmarJun_w75seds* quantile(Mall2$gPsorbedgDM, probs = 0.5)
-  # 
-  # # P sorbed with 2019 seds
-  # Mall3$mtPsorbMarJunP_w2019seds = Mall3$mtSSmarJun_w2019seds* quantile(Mall2$gPsorbedgDM, probs = 0.5)
-  # 
-  # # DIFFERENCES BETWEEN DIFFERENT P SORPTION PREDICTIONS
-  # # Dif between P sorb with 1975 and year "y" seds
-  # Mall3$mtPsorbMarJunP_75_Ydiff = Mall3$mtPsorbMarJunP_w75seds - Mall3$mtPsorbMarJunP_wPredSeds
-  # 
-  # # Dif between P sorb with 1975 and 2019 seds
-  # Mall3$mtPsorbMarJunP_75_19diff = Mall3$mtPsorbMarJunP_w75seds - Mall3$mtPsorbMarJunP_w2019seds
+  # SS PREDICTIONS
+  # SS predictions from model above
+  Mall3$mtSSmarJun_pred = 10^predict(SSvQpYn.l, Mall3)
+
+  # SS for each yearly Q with 1975 concentrations (accounts for Q)
+  Mall3$mtSSmarJun_w75seds = 10^predict(SSvQpYn.l, data.frame(L10.Qm3e6_marJun_50per = Mall3$L10.Qm3e6_marJun_50per,
+                                                              Yn = rep(1975, length = 42)))
+
+  # SS for each yearly Q with 2019 concentrations (accounts for Q)
+  Mall3$mtSSmarJun_w2019seds = 10^predict(SSvQpYn.l, data.frame(L10.Qm3e6_marJun_50per = Mall3$L10.Qm3e6_marJun_50per,
+                                                                Yn = rep(2019, length = 42)))
+
+  # P SORPTION PREDICTIONS
+  # P sorbed with predicted seds, using median from median values from monte carlo
+  Mall3$mtPsorbMarJunP_wPredSeds = Mall3$mtSSmarJun_pred* quantile(Mall2$gPsorbedgDM, probs = 0.5)
+
+  # P sorbed with 75 seds
+  Mall3$mtPsorbMarJunP_w75seds = Mall3$mtSSmarJun_w75seds* quantile(Mall2$gPsorbedgDM, probs = 0.5)
+
+  # P sorbed with 2019 seds
+  Mall3$mtPsorbMarJunP_w2019seds = Mall3$mtSSmarJun_w2019seds* quantile(Mall2$gPsorbedgDM, probs = 0.5)
+
+  # DIFFERENCES BETWEEN DIFFERENT P SORPTION PREDICTIONS
+  # Dif between P sorb with 1975 and year "y" seds
+  Mall3$mtPsorbMarJunP_75_Ydiff = Mall3$mtPsorbMarJunP_w75seds - Mall3$mtPsorbMarJunP_wPredSeds
+
+  # Dif between P sorb with 1975 and 2019 seds
+  Mall3$mtPsorbMarJunP_75_19diff = Mall3$mtPsorbMarJunP_w75seds - Mall3$mtPsorbMarJunP_w2019seds
 
 # PREPARE DATA FOR PLOT
   # GET DRP -Q PREDICTIONS FOR < 2003 AND >2003
@@ -382,6 +403,9 @@ dev.off()
     pivot_longer(c(L10.mtDRPmarJun_50per, L10.mtDRPmarJun_w75SSa), names_to = "DRPval", values_to = "L10.mtDRPmarJun")
   
   
+  #################
+  # TABLE 4
+  #################
   
   # 1- < V. > 2003 DRP ~ Q different?
   DRP_Q_prepost2003int.lm <-  lm(L10.mtDRPmarJun_50per ~ L10.Qm3e6_marJun_50per * Yg2, Mall3)
@@ -389,7 +413,7 @@ dev.off()
   
   DRP_Q_prepost2003plus.lm <-  lm(L10.mtDRPmarJun_50per ~ L10.Qm3e6_marJun_50per + Yg2, Mall3)
   summary(DRP_Q_prepost2003plus.lm) # plus 2003 sig
-  
+
   
   # 2 - DRP ~ Q relationship differ based on < 2003 and > 2003 with historic SS
   Mall_HistPred <- Mall_G03_0 %>% 
@@ -404,7 +428,7 @@ dev.off()
   summary(Mall_HistPred_plus.lm) #NS
   
 
-  
+  model.sel(DRP_Q_prepost2003int.lm, DRP_Q_prepost2003plus.lm, Mall_HistPred_int.lm, Mall_HistPred_plus.lm)
   
   # # DRP ~ Q - 1975 SS - option 1 1975 - year "y"
   # DRP_Q_lm_L03w75SSb.lm <- lm(L10.mtDRPmarJun_w75SSb ~ L10.Qm3e6_marJun_50per, Mall_G03)
@@ -623,8 +647,59 @@ dev.off()
 # SAVE/LOAD
 #####################
 #didn't get through everything before saving
-# save.image("03_Rdata/08_MaumeeFigs3_rdat")
+save.image("03_Rdata/08_MaumeeFigs3_rdat")
 # load("03_Rdata/08_MaumeeFigs3_rdat")
 
 
-  
+# Figure for directors talk 8 June 2021
+FigDirA <- ggplot() +
+  geom_ribbon(data = Mall, aes(ymin = gDRPmarJun_50per/1e6, ymax = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6, x = Y),
+              fill = "firebrick", alpha = 70/100) +
+  geom_segment(data = Mall, aes(yend = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6 - 10, y =  gDRPmarJun_50per/1e6, x = Y, xend=Y), 
+               arrow = arrow(length = unit(0.1, "inches")), color = "black", size = 1.15)+
+  geom_point(data = Mall, aes(y = gDRPmarJun_50per/1e6, x = Y), fill = "black", shape = 21, size = 4) +
+  geom_point(data = Mall, aes(y = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6, x = Y), fill = "grey", shape = 21, size = 4) +
+  ylab(NULL) +
+  xlab("Year") +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.title = element_text(size = 24),
+        axis.text = element_text(size = 16),
+        panel.border = element_blank(),
+        axis.line.x = element_line(size = 1, color = "black"),
+        axis.line.y = element_line(size = 1, color = "black"),
+        panel.background = element_rect(fill = "transparent")) +
+  geom_point(aes(y =620, x = 1975), color = "grey", size = 5) +
+  annotate("text", label = "Without P sorption", y = 620, x = 1976, size = 8, hjust = 0) +
+  geom_point(aes(y =585, x = 1975), color = "black", size = 5) +
+  annotate("text", label = "Observed", y = 585, x = 1976, size = 8, hjust = 0) 
+
+png("05_Figures/SorpVtimeDirectors_20210608.png", units = "in", height = 7, width = 16, res = 300)
+FigDirA
+dev.off()
+
+FigDirB <- ggplot() +
+  # geom_ribbon(data = Mall, aes(ymin = gDRPmarJun_50per/1e6, ymax = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6, x = Y),
+  #             fill = "firebrick", alpha = 70/100) +
+  # geom_segment(data = Mall, aes(yend = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6 - 10, y =  gDRPmarJun_50per/1e6, x = Y, xend=Y), 
+  #              arrow = arrow(length = unit(0.1, "inches")), color = "black", size = 1.15)+
+  geom_point(data = Mall, aes(y = gDRPmarJun_50per/1e6, x = Y), fill = "black", shape = 21, size = 4) +
+  # geom_point(data = Mall, aes(y = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6, x = Y), fill = "grey", shape = 21, size = 4) +
+  ylab(NULL) +
+  xlab("Year") +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.title = element_text(size = 24),
+        axis.text = element_text(size = 16),
+        panel.border = element_blank(),
+        axis.line.x = element_line(size = 1, color = "black"),
+        axis.line.y = element_line(size = 1, color = "black"),
+        panel.background = element_rect(fill = "transparent")) +
+  geom_point(aes(y =620, x = 1975), color = "grey", size = 5) +
+  annotate("text", label = "Without P sorption", y = 620, x = 1976, size = 8, hjust = 0) +
+  geom_point(aes(y =585, x = 1975), color = "black", size = 5) +
+  annotate("text", label = "Observed", y = 585, x = 1976, size = 8, hjust = 0) 
+
+png("05_Figures/SorpVtimeDirectorsNOSorb_20210608.png", units = "in", height = 7, width = 16, res = 300)
+FigDirB
+dev.off()

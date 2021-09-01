@@ -86,18 +86,40 @@ model.sel(SSSbS.lm, SSSpS.lm, SSS.lm, SSQbS.lm, SSQpS.lm, SSQ.lm)
 
 summary(SSSpS.lm)
 
+# At the median sediment concentration across all streams (221 g dry mass m-3), P sorption was ?-fold higher between the stream with the lowest (???) and highest (???) P sorption.
+#
+SSmedian <- median(sorp$SS_gDMm3.log)
+# LFR
+LFRPsorbMedSS <- exp(-18.3868 + 1.5921 * SSmedian)*1000*60 #mg P/m3/h
+#UTLC
+UTLCPsorbMedSS <- exp(-18.3868 + 1.5921 * SSmedian + 1.4404)*1000*60
 
+(UTLCPsorbMedSS/LFRPsorbMedSS-1)*100
 
 
 sorp2 <- sorp %>% 
-  mutate(Svol_gPm3Min.log.pred = predict(SSSpS.lm))
+  mutate(Svol_gPm3Min.log.pred = predict(SSSpS.lm),
+         Svol_mgPm3hr.log.pred = log(exp(Svol_gPm3Min.log.pred)*1000*60),
+         Svol_mgPm3hr.log = log(exp(Svol_gPm3Min.log)*1000*60))
+
+# difference in sorption between STF and UTLC at median SS conc
+medSSStfUtlc <- median(sorp2[sorp2$Stream == "STF" | sorp2$Stream == "UTLC",]$SS_gDMm3, na.rm = T)
+medSSStfUtlc.log <- log(medSSStfUtlc)
+SorpDif.df <- as.data.frame(rep(medSSStfUtlc.log, length = 2))
+SorpDif.df$Stream = c("STF", "UTLC")
+names(SorpDif.df) <- c("SS_gDMm3.log", "Stream")
+SorpDif.df$Svol_gPm3Min.logPred <- predict(SSSpS.lm, SorpDif.df)
+
+SorpDif.df2 <- SorpDif.df %>% 
+  mutate(Svol_gPm3Min.Pred = exp(Svol_gPm3Min.logPred),
+         Svol_mgPm3h.Pred = Svol_gPm3Min.Pred*60*1000)
 
 
 # Fig 2
 ## WMK edited 3/31/21 - JMH 4 apr 21
 Fig2 <- ggplot() + 
-  geom_point(data = sorp2, aes(y = Svol_gPm3Min.log, x = SS_gDMm3.log, color = Stream), size=2) +
-  geom_line(data = sorp2, aes(y = Svol_gPm3Min.log.pred, x = SS_gDMm3.log, color = Stream), size=1) +
+  geom_point(data = sorp2, aes(y = Svol_mgPm3hr.log, x = SS_gDMm3.log, color = Stream), size=2) +
+  geom_line(data = sorp2, aes(y = Svol_mgPm3hr.log.pred, x = SS_gDMm3.log, color = Stream), size=1) +
   scale_color_manual(name="Stream", 
                      values = c("LFR"="light blue", 
                                 "PC"="light pink", 
@@ -114,10 +136,10 @@ Fig2 <- ggplot() +
         panel.background = element_rect(fill = "transparent"),
         panel.grid.minor = element_blank(),
         panel.grid = element_blank()) + 
-  ylab(expression(paste("log P sorption (g P ", m^-3," ", min^-1,")" ))) +
+  ylab(expression(paste("log P sorption (mg P ", m^-3," ", h^-1,")" ))) +
   xlab(expression(paste("log Suspended sediment (g dry mass ",m^-3,")"))) +
-  annotate("text", x = 5.5, y = -16.5, label = "R^2 == 0.79", parse = T, size = 5)+
-  annotate("text", x = 5.5, y = -17.5, label = "P < 0.001", size = 5)
+  annotate("text", x = 5.5, y = -5.8, label = "R^2 == 0.79", parse = T, size = 5)+
+  annotate("text", x = 5.5, y = -6.5, label = "P < 0.001", size = 5)
   
 
 

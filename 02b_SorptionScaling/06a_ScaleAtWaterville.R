@@ -276,6 +276,22 @@ hist(gPsrbGdmData$gPsorb_gSS)
     mutate(key = as.factor(paste0(TargetMonths,"_",TargetFlow))) %>% 
     mutate(key2 = fct_rev(fct_relevel(key, c("AugFeb_L75th","MarJun_L75th","Jul_L75th","AugFeb_G75th", "MarJun_G75th", "Jul_G75th"))))
   
+# sum of loads for HABsForecast talk
+  MaumLoadsAn0bS <- MaumLoadsAn0b %>% 
+    mutate(TargetMonths2 = fct_recode(TargetMonths, MarJul = "MarJun", MarJul = "Jul")) %>%
+    filter(Y >= 2003) %>%
+    group_by(Y, TargetFlow, TargetMonths2) %>% 
+    summarize(across(gDRPwindow:gSSwindow, sum)) %>%
+    group_by(TargetFlow, TargetMonths2) %>% 
+    summarize(across(gDRPwindow:gSSwindow, mean)) %>%
+    pivot_wider(id_cols = "TargetMonths2", names_from = "TargetFlow", values_from = c("gDRPwindow", "gSSwindow")) %>% 
+    mutate(gDRPwin = gDRPwindow_G75th + gDRPwindow_L75th,
+           gSSwin = gSSwindow_G75th + gSSwindow_L75th,
+           DRP_perTotG75th = gDRPwindow_G75th/gDRPwin,
+           SS_perTot75th = gSSwindow_G75th/gSSwin)
+  
+
+  
 FigS1a <-   ggplot(MaumLoadsAn0b, 
          aes(y = gDRPwindow/1e6, x = as.numeric(Y), fill = key2)) +
     geom_bar(stat = "identity")+
@@ -396,7 +412,7 @@ dev.off()
   
   
   ################  
-  # save.image("03_Rdata/06a_ScaleAtWaterville_Rdat")
+  save.image("03_Rdata/06a_ScaleAtWaterville_Rdat")
   # load("03_Rdata/06a_ScaleAtWaterville_Rdat")
   ################
   
