@@ -38,8 +38,8 @@ summary(Mall$gPsorbMarJunP_50per)/1e6 #tons
 
 # - Fig 4a 
 
-Fig4A <- ggplot() +
-  geom_ribbon(data = Mall, aes(ymin = gDRPmarJun_50per/1e6, ymax = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6, x = Y), fill = "pink", alpha = 40/100) +
+Fig5A <- ggplot() +
+  geom_ribbon(data = Mall, aes(ymin = gDRPmarJun_50per/1e6, ymax = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6, x = Y), fill = "gold2", alpha = 40/100) +
   geom_segment(data = Mall, aes(y = gDRPmarJun_50per/1e6 + gPsorbMarJunP_50per/1e6, yend =  gDRPmarJun_50per/1e6+5, x = Y, xend=Y), 
                arrow = arrow(length = unit(0.1, "inches")), color = "black", size = 1.15)+
   geom_point(data = Mall, aes(y = gDRPmarJun_50per/1e6, x = Y), fill = "black", shape = 21, size = 3) +
@@ -63,26 +63,32 @@ Fig4A <- ggplot() +
 # Cyano Fig - 4c -----
 #################
 
-Fig4C <- ggplot(Mhab %>% 
+HighValLabel <- paste("10^20")
+Fig5C <- ggplot(Mhab %>% 
                   filter(var == "cyanoIndex" | var == "cyanoIndexWoS") %>% 
                   mutate( Yn2 = str_sub(Yn,3),
                           var = fct_recode(var, "Observed" ="cyanoIndex", "Without P sorption" = "cyanoIndexWoS")),
                 aes(y = values, x = var,label = Yn2))+
-    geom_boxplot(fill = "grey80", alpha = 0.7) + #"#7fbf7b"
-    geom_text(position = "jitter", size = 4) +
-    scale_y_log10() +
-    # annotate("text", x = 0.5, y = 90, label = "e", size = 8, fontface = "bold") +
-    theme_bw() +
-    ylab("Max cyanobacterial index") +
-    xlab(NULL) +
-    theme(axis.title = element_text(size = 24),
-          axis.text.y = element_text(size = 16),
-          axis.text.x = element_text(size = 20, angle = 25, hjust = 1),
-          panel.border = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.grid.major = element_blank(),
-          axis.line.x = element_line(size = 1, color = "black"),
-          axis.line.y = element_line(size = 1, color = "black"))
+  geom_boxplot(fill = "grey90", alpha = 0.7, outlier.color = "transparent") + #"#7fbf7b"
+  geom_text(position = "jitter", size = 6) +
+  # scale_y_log10() +
+  # annotate("text", x = 0.5, y = 90, label = "e", size = 8, fontface = "bold") +
+  ylim(0,40) +
+  theme_bw() +
+  ylab(expression(atop("Max cyanobacterial index", paste("(x ",10^20," cells)")))) +
+  xlab(NULL) +
+  theme(axis.title = element_text(size = 24),
+        axis.text.y = element_text(size = 16),
+        axis.text.x = element_text(size = 20, angle = 25, hjust = 1),
+        panel.border = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        axis.line.x = element_line(size = 1, color = "black"),
+        axis.line.y = element_line(size = 1, color = "black")) +
+  annotate("text", x = 2, y = 39, label = "(11 = 90 x", hjust = 1,size = 7) +
+  annotate("text", x = 2.1, y = 39.4, label = HighValLabel, parse = T, size = 7) +
+  annotate("text", x = 2.2, y = 39, label = "cells)", hjust = 0, size = 7) 
+# geom_segment(aes(x = 2, y = 37, xend = 2, yend = 40), arrow = arrow(length = unit(0.3, "inches")))
 
 # * CyanoHABS effect size ----
   MhabW <- Mhab %>% 
@@ -460,7 +466,7 @@ dev.off()
   
   
 # PLOT
- Fig4D <-  ggplot()+
+ Fig7 <-  ggplot()+
    geom_line(data = Mall_G03, aes(y = mtDRPmarJun_predict, x = Qm3e6_marJun_50per), color = "firebrick", size = 1.3) +
    geom_line(data = Mall_G03, aes(y = mtDRPmarJun_predict_w75SSa, x = Qm3e6_marJun_50per), color = "salmon", size = 1.3)+
    geom_line(data = Mall_L03, aes(y = mtDRPmarJun_predict, x = Qm3e6_marJun_50per), color = "dodgerblue", size = 1.3) +
@@ -504,26 +510,26 @@ Mall4 <- Mall3 %>%
          SSflowWeightedMean_mgL = log10(mtSSmarJun_50per/Qm3e6_marJun_50per*1000))
 
 
-
-Fig4Dinset <- ggplot(Mall4, aes(y = SSvQ.lres, x = Yn)) +
-  stat_smooth(method = "lm", color = "black", fill = "grey80") +
-  geom_point(shape = 21, size = 2, fill = "grey30") +
-  ylab(expression(atop("Suspended sediment v.", "Discharge residuals (tons)"))) +
-  xlab("Year") +
-  # scale_y_log10() +
-  theme_bw() +
-  theme(axis.title = element_text(size = 14),
-        axis.text = element_text(size = 9),
-        panel.border = element_rect(size = 1, color = "black"),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_blank())
+# 
+# Fig4Dinset <- ggplot(Mall4, aes(y = SSvQ.lres, x = Yn)) +
+#   stat_smooth(method = "lm", color = "black", fill = "grey80") +
+#   geom_point(shape = 21, size = 2, fill = "grey30") +
+#   ylab(expression(atop("Suspended sediment v.", "Discharge residuals (tons)"))) +
+#   xlab("Year") +
+#   # scale_y_log10() +
+#   theme_bw() +
+#   theme(axis.title = element_text(size = 14),
+#         axis.text = element_text(size = 9),
+#         panel.border = element_rect(size = 1, color = "black"),
+#         panel.grid.minor = element_blank(),
+#         panel.grid.major = element_blank())
 
 ################
 # DRP sorp v. DRP load
 ################
 
 sorpRange0 <- aes(ymin = gPsorbMarJunP_2.5per/1e6, ymax = gPsorbMarJunP_97.5per/1e6, x = gDRPmarJun_50per/1e6)
-Fig4B <- ggplot(Mall2, aes(y = gPsorbMarJunP_50per/1e6, x = gDRPmarJun_50per/1e6,  fill = Yg2)) +
+Fig5B <- ggplot(Mall2, aes(y = gPsorbMarJunP_50per/1e6, x = gDRPmarJun_50per/1e6,  fill = Yg2)) +
   geom_errorbar(sorpRange0) +
   geom_point(size = 4, shape = 21) +
   # geom_text() +
@@ -613,13 +619,13 @@ summary(lm(log10(Qm3marJun_50per) ~ Yn, Mall2 %>%
 ################
 
 ################
-# Fig. 5 (wrong fig 4 above because of changes b/w submissions)
+# Fig. 5 
 # updated 1 Sept.
 ################
 
-Fig5A.g <- ggplotGrob(Fig4A)
-Fig5B.g <- ggplotGrob(Fig4B)
-Fig5C.g <- ggplotGrob(Fig4C)
+Fig5A.g <- ggplotGrob(Fig5A)
+Fig5B.g <- ggplotGrob(Fig5B)
+Fig5C.g <- ggplotGrob(Fig5C)
 
 
 
@@ -634,12 +640,12 @@ Fig5.gtf <- gtable_rbind(Fig5A.gtf, Fig5BC.gtf)
 
 
 
-png("05_Figures/08_Fig5_20210901.png", units = "in", height = 12, width = 14, res = 300)
+png("05_Figures/08_Fig5_20210902.png", units = "in", height = 12, width = 14, res = 300)
 grid.newpage()
 grid.draw(Fig5.gtf)
-grid.text("a", x = unit(0.01,"npc"), y = unit(0.98,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
-grid.text("b", x = unit(0.01,"npc"), y = unit(0.52,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
-grid.text("c", x = unit(0.51,"npc"), y = unit(0.52,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
+grid.text("a", x = unit(0.01,"npc"), y = unit(0.98,"npc"), gp=gpar(fontsize = 30, fontface = "bold"))
+grid.text("b", x = unit(0.01,"npc"), y = unit(0.52,"npc"), gp=gpar(fontsize = 30, fontface = "bold"))
+grid.text("c", x = unit(0.51,"npc"), y = unit(0.52,"npc"), gp=gpar(fontsize = 30, fontface = "bold"))
 # grid.text("d", x = unit(0.615,"npc"), y = unit(0.5,"npc"), gp=gpar(fontsize = 25, fontface = "bold"))
 dev.off()
 

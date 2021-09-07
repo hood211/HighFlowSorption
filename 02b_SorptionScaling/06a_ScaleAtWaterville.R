@@ -290,8 +290,31 @@ hist(gPsrbGdmData$gPsorb_gSS)
            DRP_perTotG75th = gDRPwindow_G75th/gDRPwin,
            SS_perTot75th = gSSwindow_G75th/gSSwin)
   
-
+  TotalDRPLoad <- sum(MaumLoadsAn0bS$gDRPwin)
+  MarJulDRPLoadG75 <- MaumLoadsAn0bS$gDRPwindow_G75th[2]
+  MarJulDRPLoadL75 <- MaumLoadsAn0bS$gDRPwindow_L75th[2]
+  MarJulDRPLoadAllFlow <- MarJulDRPLoadG75 + MarJulDRPLoadL75
   
+  MarJulDRPloadPerTotG75MarJul <- MarJulDRPLoadG75/MarJulDRPLoadAllFlow; MarJulDRPloadPerTotG75MarJul
+  MarJulDRPloadPerTotal <-  MarJulDRPLoadG75/TotalDRPLoad; MarJulDRPloadPerTotal
+  
+  MaumLoadsAn0bSnoMarJun <- MaumLoadsAn0b %>% 
+    # mutate(TargetMonths2 = fct_recode(TargetMonths, MarJul = "MarJun", MarJul = "Jul")) %>%
+    filter(Y >= 2003) %>%
+    group_by(Y, TargetFlow, TargetMonths) %>% 
+    summarize(across(gDRPwindow:gSSwindow, sum)) %>%
+    group_by(TargetFlow, TargetMonths) %>% 
+    summarize(across(gDRPwindow:gSSwindow, mean)) %>%
+    pivot_wider(id_cols = "TargetMonths", names_from = "TargetFlow", values_from = c("gDRPwindow", "gSSwindow")) %>% 
+    mutate(gDRPwin = gDRPwindow_G75th + gDRPwindow_L75th,
+           gSSwin = gSSwindow_G75th + gSSwindow_L75th,
+           DRP_perTotG75th = gDRPwindow_G75th/gDRPwin,
+           SS_perTot75th = gSSwindow_G75th/gSSwin)
+  
+  
+  
+
+    
 FigS1a <-   ggplot(MaumLoadsAn0b, 
          aes(y = gDRPwindow/1e6, x = as.numeric(Y), fill = key2)) +
     geom_bar(stat = "identity")+
@@ -412,7 +435,7 @@ dev.off()
   
   
   ################  
-  save.image("03_Rdata/06a_ScaleAtWaterville_Rdat")
-  # load("03_Rdata/06a_ScaleAtWaterville_Rdat")
+  # save.image("03_Rdata/06a_ScaleAtWaterville_Rdat")
+  load("03_Rdata/06a_ScaleAtWaterville_Rdat")
   ################
   
