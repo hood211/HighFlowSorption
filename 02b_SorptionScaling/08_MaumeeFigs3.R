@@ -85,9 +85,9 @@ Fig5C <- ggplot(Mhab %>%
         panel.grid.major = element_blank(),
         axis.line.x = element_line(size = 1, color = "black"),
         axis.line.y = element_line(size = 1, color = "black")) +
-  annotate("text", x = 2, y = 39, label = "(11 = 90 x", hjust = 1,size = 7) +
-  annotate("text", x = 2.1, y = 39.4, label = HighValLabel, parse = T, size = 7) +
-  annotate("text", x = 2.2, y = 39, label = "cells)", hjust = 0, size = 7) 
+  annotate("text", x = 2.1, y = 39, label = "*(2011 = 90 x", hjust = 1,size = 7) +
+  annotate("text", x = 2.2, y = 39.4, label = HighValLabel, parse = T, size = 7) +
+  annotate("text", x = 2.3, y = 39, label = "cells)", hjust = 0, size = 7) 
 # geom_segment(aes(x = 2, y = 37, xend = 2, yend = 40), arrow = arrow(length = unit(0.3, "inches")))
 
 # * CyanoHABS effect size ----
@@ -724,7 +724,7 @@ dev.off()
 # SAVE/LOAD
 #####################
 # save.image("03_Rdata/08_MaumeeFigs3_rdat")
-load("03_Rdata/08_MaumeeFigs3_rdat")
+# load("03_Rdata/08_MaumeeFigs3_rdat")
 
 
 
